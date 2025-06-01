@@ -13,6 +13,7 @@ def main():
     y luego desapareció. Por esta característica la nombraron “estrella invitada” o 
     “estrella nueva”. Así, a cada estrella nueva que aparecía en el cielo le llamaban “Nova”.
     """)
+    st.image("supernova.jpg", caption="Prueba", use_column_width=True)
 
     st.subheader("Explosiones recurrentes")
     st.markdown("""
