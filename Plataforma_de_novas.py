@@ -41,7 +41,34 @@ def actividad_1():
     st.markdown("<h3 style='font-family:\"Times New Roman\"; color:#cccccc;'>Nuestro Objetivo</h3>", unsafe_allow_html=True)
     st.markdown("<div style='font-family:\"Times New Roman\";color:#f0f0f0;'>Modelar el comportamiento del brillo en novas reales, clasificar los eventos según su decaimiento (t₃), y permitir su uso en" \
     " clases de matemática y física.</div>", unsafe_allow_html=True)
+def cargar_datos_programador_csv():
+    """
+    Carga los datos desde un archivo CSV
+    """
+    archivo = "nova_estudiante.csv"
+    try:
+        datos = pd.read_csv(nova_estudiante.csv)
+        st.success(f"Datos cargados exitosamente desde {archivo}.")
+        return datos
+    except FileNotFoundError:
+        st.error(f"El archivo '{archivo}' no se encontró. Asegúrate de que esté en la misma carpeta que este script.")
+        return None
+    except Exception as e:
+        st.error(f"Ocurrió un error al cargar los datos: {e}")
+        return None
+ def descargar_datos_csv(datos, nombre_archivo="nova_estudiante.csv"):
+    """
+    Permite a los usuarios descargar un archivo CSV.
+    """
+    buffer = io.StringIO()
+    datos.to_csv(buffer, index=False)
+    buffer.seek(0)
 
+    st.download_button(
+        label="Descargar archivo CSV",
+        data=buffer,
+        file_name=nombre_archivo,
+        mime="text/csv",)
 def simulacion_curva_luz():
     st.markdown("<h3 style='font-family:\"Times New Roman\"; color:#cccccc;'>Simulación de Curva de Luz</h3>", unsafe_allow_html=True)
     st.markdown("""
