@@ -56,7 +56,7 @@ def cargar_datos_programador_csv():
     except Exception as e:
         st.error(f"Ocurrió un error al cargar los datos: {e}")
         return None
- def descargar_datos_csv(datos, nombre_archivo="nova_estudiante.csv"):
+def descargar_datos_csv(datos, nombre_archivo="nova_estudiante.csv"):
     """
     Permite a los usuarios descargar un archivo CSV.
     """
