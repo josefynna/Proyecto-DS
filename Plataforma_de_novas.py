@@ -1,7 +1,9 @@
 import streamlit as st
 import pandas as pd
 import base64
-import matplotlib as plt 
+import matplotlib.pyplot as plt 
+import numpy as np 
+import io 
 
 def set_background(image_file):
     with open(image_file, "rb") as image:
@@ -18,7 +20,76 @@ def set_background(image_file):
     """
     st.markdown(css, unsafe_allow_html=True)
 
+import streamlit as st # Asegúrate de que esta línea esté al inicio de tu script
 
+def set_custom_styles():
+    custom_css = """
+    <style>
+    /* Estilos para el texto "Selecciona una sección" (radio button parent) */
+    /* La clase br351g era para el 'p' de "Selecciona una sección" */
+    .st-emotion-cache-br351g p {
+        color: white !important;
+    }
+
+    /* Estilos para el texto de las opciones de radio (¿Qué es una nova?, Curvas de luz, Clasificación) */
+    /* Apuntamos al div padre con la clase stRadio para mayor especificidad y al p con la clase 10c9vv9 */
+    .stRadio .st-emotion-cache-10c9vv9 p {
+        color: white !important;
+    }
+
+    /* Estilos para los encabezados de los expanders (Observaciones del cielo, ¿Qué causa la explosión?) */
+    .stExpanderHeader {
+        color: white !important;
+    }
+
+    /* Estilos para los títulos (incluyendo los generados por st.title()) */
+    h1, .stApp h1, .block-container h1, .css-10trblm {
+        color: white !important;
+    }
+
+    /* --- SOLUCIÓN REFORZADA PARA BOTONES DE ACTIVIDAD (Actividad 1, Actividad 2) --- */
+
+    /* Apunta al botón Streamlit en general, para el fondo y el borde */
+    /* stButton es una clase más genérica que engloba el botón */
+    .stButton > button {
+        background-color: rgb(30, 30, 40) !important; /* Fondo oscuro del botón */
+        border: 1px solid rgba(250, 250, 250, 0.2) !important; /* Borde sutil */
+        border-radius: 0.5rem !important;
+        padding: 0.25rem 0.75rem !important;
+        line-height: 1.6 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0px !important;
+        width: 100% !important;
+        /* IMPORTANTE: No establecemos aquí el color del texto, lo haremos más abajo */
+    }
+
+    /* Estilo al pasar el ratón por encima (hover) para los botones de actividad */
+    .stButton > button:hover {
+        background-color: rgb(50, 50, 60) !important; /* Un poco más claro al pasar el ratón */
+    }
+
+    /* CRUCIAL: Apuntar al texto DENTRO del botón de actividad */
+    /* Esta regla es MUY ESPECÍFICA para el párrafo 'p' que contiene el texto del botón,
+       que, como vimos, tiene la clase 10c9vv9 y está dentro de un 'button' que a su vez
+       está dentro de un '.stButton' */
+    .stButton > button .st-emotion-cache-10c9vv9 p {
+        color: white !important; /* ¡FUERZA EL TEXTO DEL BOTÓN A SER BLANCO! */
+    }
+
+    /* Intento adicional si el anterior no funciona: apunta directamente a la etiqueta */
+    .stButton > button p.st-emotion-cache-10c9vv9 {
+        color: white !important; /* Intento alternativo para el texto del botón */
+    }
+
+
+    </style>
+    """
+    st.markdown(custom_css, unsafe_allow_html=True)
 
 
 def actividad_1():
@@ -36,18 +107,29 @@ def actividad_1():
         Se conoce como <strong>brillo</strong> o <strong>flujo luminoso</strong> de una estrella a la cantidad de luminosidad que viene de un objeto radiante y que llega a la Tierra. De esta forma, el brillo se relaciona con la percepción de qué tan brillante se ve una estrella desde la Tierra. La <em>magnitud aparente</em> nos permite clasificar estrellas a partir de su brillo. Es importante mencionar que la magnitud aparente no entrega información del brillo real del astro, ya que esa característica depende de la distancia y tamaño del objeto.
         </p>
         """, unsafe_allow_html=True)
+
         st.image("mgnitude.png", caption="Brillo Relativo", use_container_width=True)
+
 
     st.markdown("<h3 style='font-family:\"Times New Roman\"; color:#cccccc;'>Nuestro Objetivo</h3>", unsafe_allow_html=True)
     st.markdown("<div style='font-family:\"Times New Roman\";color:#f0f0f0;'>Modelar el comportamiento del brillo en novas reales, clasificar los eventos según su decaimiento (t₃), y permitir su uso en" \
     " clases de matemática y física.</div>", unsafe_allow_html=True)
+
+    datos = cargar_datos_programador_csv()
+    if datos is not None:
+        st.dataframe(datos)
+        descargar_datos_csv(datos)
+
+    
+
+
 def cargar_datos_programador_csv():
     """
     Carga los datos desde un archivo CSV
     """
     archivo = "nova_estudiante.csv"
     try:
-        datos = pd.read_csv(nova_estudiante.csv)
+        datos = pd.read_csv("nova_estudiante.csv")
         st.success(f"Datos cargados exitosamente desde {archivo}.")
         return datos
     except FileNotFoundError:
@@ -56,19 +138,24 @@ def cargar_datos_programador_csv():
     except Exception as e:
         st.error(f"Ocurrió un error al cargar los datos: {e}")
         return None
+    
+    
 def descargar_datos_csv(datos, nombre_archivo="nova_estudiante.csv"):
     """
     Permite a los usuarios descargar un archivo CSV.
     """
     buffer = io.StringIO()
     datos.to_csv(buffer, index=False)
-    buffer.seek(0)
+    
+    # Obtener el contenido del buffer como texto
+    contenido_csv = buffer.getvalue()
 
     st.download_button(
         label="Descargar archivo CSV",
-        data=buffer,
+        data=contenido_csv,  # ✅ ahora es un string válido
         file_name=nombre_archivo,
-        mime="text/csv",)
+        mime="text/csv"
+    )
 def simulacion_curva_luz():
     st.markdown("<h3 style='font-family:\"Times New Roman\"; color:#cccccc;'>Simulación de Curva de Luz</h3>", unsafe_allow_html=True)
     st.markdown("""
@@ -160,6 +247,12 @@ def actividad_2():
         </p>
         """, unsafe_allow_html=True)
 
+        simulacion_curva_luz()
+        
+
+    
+
+
     elif menu=="Clasificación":
         st.markdown("""
         <p style='color:white;'>
@@ -177,6 +270,9 @@ def actividad_2():
 
 def main():
     set_background("fondo.png")
+    set_custom_styles()
+
+
 
     st.title("Plataforma Interactiva para el estudio de Novas")
 
@@ -206,7 +302,3 @@ if __name__ == "__main__":
 
 
 
-
-    # Descomenta si tienes una tabla para mostrar
-    # df = pd.read_csv("clasificacion_novas.csv")
-    # st.dataframe(df)
