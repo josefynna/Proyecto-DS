@@ -17,7 +17,7 @@ if __name__ == "__main__":
 """
 def main():
     st.markdown("<h1 style='font-family:\"Times New Roman\";'>Proyecto de desarrollo de software</h1>", unsafe_allow_html=True)
-    lplppoo
+    
 
     with st.expander("Actividad 1"):
         st.markdown("<h2 style='font-family:\"Times New Roman\";'>Actividad 1</h2>", unsafe_allow_html=True)
