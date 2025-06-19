@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
-import base64 
+import base64
+import matplotlib.pyplot as plt 
+import numpy as np 
+import io 
 
 def set_background(image_file):
     with open(image_file, "rb") as image:
@@ -17,18 +20,86 @@ def set_background(image_file):
     """
     st.markdown(css, unsafe_allow_html=True)
 
+import streamlit as st # Asegúrate de que esta línea esté al inicio de tu script
 
+def set_custom_styles():
+    custom_css = """
+    <style>
+    /* Estilos para el texto "Selecciona una sección" (radio button parent) */
+    /* La clase br351g era para el 'p' de "Selecciona una sección" */
+    .st-emotion-cache-br351g p {
+        color: white !important;
+    }
+
+    /* Estilos para el texto de las opciones de radio (¿Qué es una nova?, Curvas de luz, Clasificación) */
+    /* Apuntamos al div padre con la clase stRadio para mayor especificidad y al p con la clase 10c9vv9 */
+    .stRadio .st-emotion-cache-10c9vv9 p {
+        color: white !important;
+    }
+
+    /* Estilos para los encabezados de los expanders (Observaciones del cielo, ¿Qué causa la explosión?) */
+    .stExpanderHeader {
+        color: white !important;
+    }
+
+    /* Estilos para los títulos (incluyendo los generados por st.title()) */
+    h1, .stApp h1, .block-container h1, .css-10trblm {
+        color: white !important;
+    }
+
+    /* --- SOLUCIÓN REFORZADA PARA BOTONES DE ACTIVIDAD (Actividad 1, Actividad 2) --- */
+
+    /* Apunta al botón Streamlit en general, para el fondo y el borde */
+    /* stButton es una clase más genérica que engloba el botón */
+    .stButton > button {
+        background-color: rgb(30, 30, 40) !important; /* Fondo oscuro del botón */
+        border: 1px solid rgba(250, 250, 250, 0.2) !important; /* Borde sutil */
+        border-radius: 0.5rem !important;
+        padding: 0.25rem 0.75rem !important;
+        line-height: 1.6 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0px !important;
+        width: 100% !important;
+        /* IMPORTANTE: No establecemos aquí el color del texto, lo haremos más abajo */
+    }
+
+    /* Estilo al pasar el ratón por encima (hover) para los botones de actividad */
+    .stButton > button:hover {
+        background-color: rgb(50, 50, 60) !important; /* Un poco más claro al pasar el ratón */
+    }
+
+    /* CRUCIAL: Apuntar al texto DENTRO del botón de actividad */
+    /* Esta regla es MUY ESPECÍFICA para el párrafo 'p' que contiene el texto del botón,
+       que, como vimos, tiene la clase 10c9vv9 y está dentro de un 'button' que a su vez
+       está dentro de un '.stButton' */
+    .stButton > button .st-emotion-cache-10c9vv9 p {
+        color: white !important; /* ¡FUERZA EL TEXTO DEL BOTÓN A SER BLANCO! */
+    }
+
+    /* Intento adicional si el anterior no funciona: apunta directamente a la etiqueta */
+    .stButton > button p.st-emotion-cache-10c9vv9 {
+        color: white !important; /* Intento alternativo para el texto del botón */
+    }
+
+
+    </style>
+    """
+    st.markdown(custom_css, unsafe_allow_html=True)
 
 
 def actividad_1():
-    st.markdown("<h1 style='font-family:\"Times New Roman\";color:white;'>Plataforma interactiva para el estudio de novas</h1>", unsafe_allow_html=True)
     st.markdown("<h2 style='font-family:\"Times New Roman\";color:#cccccc;'>Actividad 1</h2>", unsafe_allow_html=True)
 
-    
+
     with st.expander("Observaciones del cielo"):
         st.markdown("""
         <p style='font-family:"Times New Roman";color:#f0f0f0;'>
-        Cuando miramos al cielo, observamos muchos objetos brillantes, la mayoría de los cuales son estrellas. No todas las 
+        Cuando miramos al cielo, observamos muchos objetos brillantes, la mayoría de los cuales son estrellas. No todas las
         estrellas brillan de la misma manera, por lo que es natural preguntarse: ¿existen estrellas que brillan más que otras?¿las estrellas más brillantes están más cerca de la Tierra?
         ¿Cuál es la estrella más cercana a la Tierra? ¿hay más estrellas de las que podemos ver?
         </p>
@@ -37,12 +108,103 @@ def actividad_1():
         </p>
         """, unsafe_allow_html=True)
 
+        st.image("mgnitude.png", caption="Brillo Relativo", use_container_width=True)
+
+
     st.markdown("<h3 style='font-family:\"Times New Roman\"; color:#cccccc;'>Nuestro Objetivo</h3>", unsafe_allow_html=True)
     st.markdown("<div style='font-family:\"Times New Roman\";color:#f0f0f0;'>Modelar el comportamiento del brillo en novas reales, clasificar los eventos según su decaimiento (t₃), y permitir su uso en" \
     " clases de matemática y física.</div>", unsafe_allow_html=True)
 
+    datos = cargar_datos_programador_csv()
+    if datos is not None:
+        st.dataframe(datos)
+        descargar_datos_csv(datos)
+
+    
 
 
+def cargar_datos_programador_csv():
+    """
+    Carga los datos desde un archivo CSV
+    """
+    archivo = "nova_estudiante.csv"
+    try:
+        datos = pd.read_csv("nova_estudiante.csv")
+        st.success(f"Datos cargados exitosamente desde {archivo}.")
+        return datos
+    except FileNotFoundError:
+        st.error(f"El archivo '{archivo}' no se encontró. Asegúrate de que esté en la misma carpeta que este script.")
+        return None
+    except Exception as e:
+        st.error(f"Ocurrió un error al cargar los datos: {e}")
+        return None
+    
+    
+def descargar_datos_csv(datos, nombre_archivo="nova_estudiante.csv"):
+    """
+    Permite a los usuarios descargar un archivo CSV.
+    """
+    buffer = io.StringIO()
+    datos.to_csv(buffer, index=False)
+    
+    # Obtener el contenido del buffer como texto
+    contenido_csv = buffer.getvalue()
+
+    st.download_button(
+        label="Descargar archivo CSV",
+        data=contenido_csv,  # ✅ ahora es un string válido
+        file_name=nombre_archivo,
+        mime="text/csv"
+    )
+def simulacion_curva_luz():
+    st.markdown("<h3 style='font-family:\"Times New Roman\"; color:#cccccc;'>Simulación de Curva de Luz</h3>", unsafe_allow_html=True)
+    st.markdown("""
+    <p style='color:white;'>
+    Explora cómo la magnitud aparente de una nova varía con el tiempo, utilizando el parámetro t3.
+    </p>
+    """, unsafe_allow_html=True)
+
+    m_peak = st.slider("Magnitud Aparente Inicial (pico de brillo)", min_value=-5.0, max_value=10.0, value=0.0, step=0.1)
+    t3_value = st.slider("Valor de t3 (días para decaer 3 magnitudes)", min_value=1, max_value=200, value=50, step=1)
+    tiempo_total = st.slider("Tiempo total de simulación (días)", min_value=10, max_value=500, value=100, step=10)
+
+    # Generar puntos de tiempo
+    t = np.linspace(0, tiempo_total, 500)
+
+    # Calcular la magnitud aparente
+    magnitud = m_peak + (3 / t3_value) * t
+
+    magnitud[magnitud < m_peak] = m_peak
+
+    # Graficar la curva de luz
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(t, magnitud, color='skyblue', linewidth=2)
+    ax.set_xlabel("Tiempo (días)", color='white')
+    ax.set_ylabel("Magnitud Aparente", color='white')
+    ax.set_title("Curva de Luz de Nova Simulada", color='white')
+    ax.invert_yaxis() # La magnitud aparente se invierte: valores más bajos son más brillantes
+    ax.grid(True, linestyle='--', alpha=0.7)
+    ax.set_facecolor("#262730") # Fondo del gráfico oscuro
+    fig.patch.set_facecolor("#0e1117") # Fondo de la figura oscuro
+
+    # Color de los ticks y labels de los ejes
+    ax.tick_params(axis='x', colors='white')
+    ax.tick_params(axis='y', colors='white')
+    ax.spines['left'].set_color('white')
+    ax.spines['bottom'].set_color('white')
+    ax.spines['right'].set_color('white')
+    ax.spines['top'].set_color('white')
+
+
+    st.pyplot(fig)
+
+    st.markdown(f"""
+    <p style='color:white;'>
+    Con una magnitud inicial de <strong>{m_peak}</strong> y un $t_3$ de <strong>{t3_value}</strong> días,
+    la nova tardaría <strong>{t3_value}</strong> días en decaer 3 magnitudes,
+    alcanzando una magnitud de <strong>{m_peak + 3:.1f}</strong> en ese punto.
+    </p>
+    """, unsafe_allow_html=True)
 
 def actividad_2():
     st.markdown("<h2 style='font-family:\"Times New Roman\"; color:white;'>Actividad 2</h2>", unsafe_allow_html=True)
@@ -52,18 +214,18 @@ def actividad_2():
 
     if menu=="¿Qué es una nova?":
          st.markdown("""
-          <p style='color:white;'>            
-         Durante el siglo XI d.C., en China, las personas que dedicaban 
+          <p style='color:white;'>
+         Durante el siglo XI d.C., en China, las personas que dedicaban
          su vida a la astronomía observaron una estrella que apareció durante un tiempo
-         y luego desapareció. Por esta característica la nombraron “estrella invitada” o 
+         y luego desapareció. Por esta característica la nombraron “estrella invitada” o
          “estrella nueva”. Así, a cada estrella nueva que aparecía en el cielo le llamaban “Nova”. Hoy sabemos
          que su aparición se debe a una explosión de una estrellas binarias.
         </p>
-         """,unsafe_allow_html=True) 
+         """,unsafe_allow_html=True)
          with st.expander("¿Qué causa la explosión?"):
               st.markdown("""
               <p style='color:white;'>
-              La estrella más masiva “absorbe” gas de su compañera, creando un disco de gas alrededor del sistema, el 
+              La estrella más masiva “absorbe” gas de su compañera, creando un disco de gas alrededor del sistema, el
               cual explota cuando ese material alcanza una masa y temperatura crítica.
               </p>
               """,unsafe_allow_html=True )
@@ -74,8 +236,7 @@ def actividad_2():
               Las novas pueden ser eventos recurrentes, a diferencia de las supernovas, que marcan el fin de una estrella masiva.
              </p>
               """,unsafe_allow_html=True )
-         
-    
+
     elif menu=="Curvas de luz":
         st.markdown("""
         <p style='color:white;'>
@@ -85,6 +246,12 @@ def actividad_2():
         en disminuir su brillo en 3 magnitudes.
         </p>
         """, unsafe_allow_html=True)
+
+        simulacion_curva_luz()
+        
+
+    
+
 
     elif menu=="Clasificación":
         st.markdown("""
@@ -101,28 +268,37 @@ def actividad_2():
         """, unsafe_allow_html=True)
 
 
-
-
 def main():
-    st.sidebar.title("Navegación")
-    seleccion=st.sidebar.radio("Elige una actividad", ["Actividad 1: Brillo Estelar", "Actividad 2: Novas"])
-    
-    if seleccion.startswith("Actividad 1"):
-       actividad_1()
+    set_background("fondo.png")
+    set_custom_styles()
 
-    else:
+
+
+    st.title("Plataforma Interactiva para el estudio de Novas")
+
+    # Usar st.session_state para mantener el estado de la página seleccionada
+    if 'page' not in st.session_state:
+        st.session_state.page = 'Actividad 1' # Página inicial
+
+    col1, col2 = st.columns(2) # Puedes ajustar el número de columnas según cuántos botones quieras
+
+    with col1:
+        if st.button("Actividad 1: Brillo Estelar"):
+            st.session_state.page = 'Actividad 1'
+
+    with col2:
+        if st.button("Actividad 2: Novas"):
+            st.session_state.page = 'Actividad 2'
+
+    # Mostrar el contenido según la página seleccionada
+    if st.session_state.page == 'Actividad 1':
+        actividad_1()
+    elif st.session_state.page == 'Actividad 2':
         actividad_2()
-  
 
 
-
-
-    # Descomenta si tienes una tabla para mostrar
-    # df = pd.read_csv("clasificacion_novas.csv")
-    # st.dataframe(df)
-
-
-    
-if __name__=="__main__":
-    set_background("C:/Users/Acer/Downloads/fondo.png")
+if __name__ == "__main__":
     main()
+
+
+
