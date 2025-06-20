@@ -207,12 +207,35 @@ def simulacion_curva_luz():
     """, unsafe_allow_html=True)
 
 def actividad_2():
+    
     st.markdown("<h2 style='font-family:\"Times New Roman\"; color:white;'>Actividad 2</h2>", unsafe_allow_html=True)
-    menu=st.radio("Selecciona una sección", ["¿Qué es una nova?","Curvas de luz","Clasificación"])
+
+    # Inicializar el estado de sesión para la sub-navegación de la actividad 2
+    if 'act2_section' not in st.session_state:
+        st.session_state.act2_section = '¿Qué es una nova?' # Sección por defecto
+
+    # Crear columnas para los botones
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        if st.button("¿Qué es una nova?", key="nova_que"):
+            st.session_state.act2_section = '¿Qué es una nova?'
+    with col2:
+        if st.button("Curvas de luz", key="nova_curva"):
+            st.session_state.act2_section = 'Curvas de luz'
+    with col3:
+        if st.button("Clasificación", key="nova_clasificacion"):
+            st.session_state.act2_section = 'Clasificación'
+
+    with col4:
+        if st.button("Actividad",key="act_nova"):
+            st.session_state.act2_section="Actividad"
 
 
+    st.markdown("---") # Añadir una línea horizontal para separación
 
-    if menu=="¿Qué es una nova?":
+    # Mostrar contenido basado en el botón seleccionado
+    if st.session_state.act2_section == "¿Qué es una nova?":
          st.markdown("""
           <p style='color:white;'>
          Durante el siglo XI d.C., en China, las personas que dedicaban
@@ -237,7 +260,7 @@ def actividad_2():
              </p>
               """,unsafe_allow_html=True )
 
-    elif menu=="Curvas de luz":
+    elif st.session_state.act2_section == "Curvas de luz":
         st.markdown("""
         <p style='color:white;'>
         La curva de luz es una herramienta gráfica, que representa el brillo de
@@ -248,12 +271,9 @@ def actividad_2():
         """, unsafe_allow_html=True)
 
         simulacion_curva_luz()
-        
-
-    
 
 
-    elif menu=="Clasificación":
+    elif st.session_state.act2_section == "Clasificación":
         st.markdown("""
         <p style='color:white;'>
         Clasificamos de la siguiente manera:
@@ -267,11 +287,112 @@ def actividad_2():
         </table>
         """, unsafe_allow_html=True)
 
+    elif st.session_state.act2_section=="Actividad":
+        st.markdown("""
+        <p style= 'color:white;'>
+        Usando los datos de que se entregan a continuación, constuye un gráfico de dispersión considerando como variable 
+        dependiente la magnitud aparente y como variable independiente el tiempo desde erupción.
+        </p>
+        """, unsafe_allow_html=True)
+
+        archivos = {
+            "NOVA Cplac": "NOVA_Cplac.csv",
+            "NOVA Sco 2023": "NOVA_Sco 2023.csv",
+            "NOVA Sgr 202331": "NOVA_Sgr20231.csv",
+            "NOVA V603": "NOVA_V603.csv"
+        }
+
+        
+        # Permitir al usuario seleccionar una Nova
+        nova_seleccionada = st.selectbox(
+            "Selecciona una Nova para graficar:",
+            list(archivos.keys())
+        )
+
+        if nova_seleccionada:
+            archivo_seleccionado = archivos[nova_seleccionada]
+            st.markdown(f"<h4 style='color:#cccccc;'>Datos de {nova_seleccionada}</h4>", unsafe_allow_html=True)
+            try:
+                datos = pd.read_csv(archivo_seleccionado, sep=';', usecols=[0, 1], names=["Tiempo", "Magnitud"], skiprows=1)
+                datos["Tiempo"] = datos["Tiempo"].str.replace(',', '.', regex=False).astype(float)
+                datos["Magnitud"] = datos["Magnitud"].str.replace(',', '.', regex=False).astype(float)
+
+                st.dataframe(datos)
+                descargar_datos_csv(datos, nombre_archivo=archivo_seleccionado)
+
+                # Generar el gráfico de dispersión
+                st.markdown(f"<h4 style='color:#cccccc;'>Gráfico de Dispersión para {nova_seleccionada}</h4>", unsafe_allow_html=True)
+                fig, ax = plt.subplots(figsize=(10, 6))
+                ax.scatter(datos["Tiempo"], datos["Magnitud"], color='lightcoral', s=50, alpha=0.8)
+                ax.set_xlabel("Tiempo (días)", color='white')
+                ax.set_ylabel("Magnitud Aparente", color='white')
+                ax.set_title(f"Curva de Luz de {nova_seleccionada}", color='white')
+                ax.invert_yaxis() # Magnitudes más bajas son más brillantes
+                ax.grid(True, linestyle='--', alpha=0.7)
+                ax.set_facecolor("#262730") # Fondo del gráfico oscuro
+                fig.patch.set_facecolor("#0e1117") # Fondo de la figura oscuro
+
+                # Color de los ticks y labels de los ejes
+                ax.tick_params(axis='x', colors='white')
+                ax.tick_params(axis='y', colors='white')
+                ax.spines['left'].set_color('white')
+                ax.spines['bottom'].set_color('white')
+                ax.spines['right'].set_color('white')
+                ax.spines['top'].set_color('white')
+
+                st.pyplot(fig)
+
+            except FileNotFoundError:
+                st.warning(f"Archivo {archivo_seleccionado} no encontrado.")
+            except Exception as e:
+                st.error(f"Ocurrió un error al procesar el archivo {archivo_seleccionado}: {e}")
+
+        st.markdown("""
+        <p style= 'color:white;'>
+        ¿Qué relación existe entre el tiempo y el brillo?
+        </p>
+        """, unsafe_allow_html=True)
+
+        # Opciones de respuesta
+        opciones_respuesta = [
+            "A) A medida que pasa el tiempo, el brillo de la nova aumenta constantemente.",
+            "B) El brillo de la nova disminuye con el tiempo.",
+            "C) No hay una relación clara entre el tiempo y el brillo."
+        ]
+
+        # Radio button para que el usuario seleccione una respuesta
+        respuesta_usuario = st.radio(
+            "Selecciona la opción que mejor describe la relación observada:",
+            opciones_respuesta,
+            key="pregunta_brillo_tiempo" # Clave única para este widget
+        )
+
+        # Lógica para mostrar la retroalimentación
+        if st.button("Ver respuesta", key="boton_respuesta_brillo"):
+            if respuesta_usuario == opciones_respuesta[1]: # Opción B es la correcta
+                st.success("¡Respuesta Correcta!")
+                st.markdown("""
+                <p style='color:white;'>
+                El gráfico de dispersión muestra claramente que, una vez que la nova "explota", el brillo de esta disminuye confome el tiempo
+                transcurrido, la relación matemática que existe entre la magnitud aparente y el teimpo transcurrido es logarítmica, es decir, 
+                el brillo decrece de forma logarítmica.
+                </p>
+                """, unsafe_allow_html=True)
+            else:
+                st.error("Respuesta Incorrecta. Inténtalo de nuevo.")
+                st.markdown("""
+                <p style='color:white;'>
+                Observa con atención el eje Y (Magnitud Aparente) del gráfico. Recuerda que en astronomía,
+                los valores más bajos de magnitud significan un objeto más brillante, y los valores más altos
+                significan un objeto menos brillante. Mira cómo cambian los puntos a medida que el tiempo (eje X) avanza.
+                </p>
+                """, unsafe_allow_html=True)
+
+
 
 def main():
     set_background("fondo.png")
     set_custom_styles()
-
 
 
     st.title("Plataforma Interactiva para el estudio de Novas")
@@ -299,6 +420,14 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+    # Descomenta si tienes una tabla para mostrar
+    # df = pd.read_csv("clasificacion_novas.csv")
+    # st.dataframe(df)
+
 
 
 
