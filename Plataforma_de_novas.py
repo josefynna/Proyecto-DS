@@ -346,6 +346,44 @@ def actividad_2():
                 st.warning(f"Archivo {archivo_seleccionado} no encontrado.")
             except Exception as e:
                 st.error(f"Ocurrió un error al procesar el archivo {archivo_seleccionado}: {e}")
+             
+             #pregunta sobre el decaimiento de una nova
+        st.markdown("""
+        <hr style='border:1px solid #444;'>
+        <p style='color:white;'>
+        Según la curva de kuz de la nova mostrada, ¿cómo clasificarías su tipo de decaimiento?
+        </p>
+        """, unsafe_allow_html=True)
+
+        #alternativas(opciones)
+        Alternativas = [
+            "A) Rapido: pierde su brillo en muy rapidamente en muy pocos dias.",
+            "B) Lento: Su brillo disminuye de forma gradual y tarda mas en perder magnitud.",
+            "C) muy lento: Su brillo permanece durante una decada o mas antes de comenzar a desvanecerse lentamente."
+        ]       
+        respuesta_tipo = st.radio(
+            "Selecciona el tipo de decaimiento:",
+            Alternativas,
+            key="pregunta_tipo_decaimiento" 
+        )
+
+        if st.button("Verificar tipo de decaimiento", key="boton_decaimiento"):
+            if nova_seleccionada == "NOVA Sco 2023" and respuesta_tipo == Alternativas[0]:
+                st.success("Correcto, la NOVA Sco 2023 presenta un decaimiento rápido.")
+            elif nova_seleccionada == "NOVA Sgr 202331" and respuesta_tipo == Alternativas[0]:
+                st.success("Correcto, la NOVA Sgr 202331 presenta un decaimiento rapido.")
+            elif nova_seleccionada == "NOVA Cplac" and respuesta_tipo == Alternativas[2]:
+                st.success("Correcto, la NOVA Cplac presenta un decaimiento lento.")
+            elif nova_seleccionada == "Nova V603" and respuesta_tipo == Alternativas[0]:
+                st.succes("Correcto, la NOVA V603 presenta un decaimiento rapido")
+            else:
+                st.error("Respuesta incorrecta. Observa con mas detalle la curva de luz.")
+                st.markdown("""
+                <p style='color:white;'>
+                Recuerda que un decaimiento rápido se refleja en una caída abrupta del brillo en pocos días (1-100), un decaimiento lento mantiene
+                el brillo alto por más tiempo antes de atenuarse (100-150) y un decaimiento mas lento cuando el brillo se mantiene por mas tiempo que la categoria anterior (mayor a 150).
+                </p>
+                """, unsafe_allow_html=True)
 
         st.markdown("""
         <p style= 'color:white;'>
