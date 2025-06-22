@@ -4,6 +4,7 @@ import base64
 import matplotlib.pyplot as plt 
 import numpy as np 
 import io 
+import random
 
 def set_background(image_file):
     with open(image_file, "rb") as image:
@@ -93,51 +94,170 @@ def set_custom_styles():
 
 
 def actividad_1():
-    st.markdown("<h2 style='font-family:\"Times New Roman\";color:#cccccc;'>Actividad 1</h2>", unsafe_allow_html=True)
+    """
+    Actividad 1: Brillo Estelar
+    Se divide en subsecciones manejadas por botones.
+    """
 
+    # 1) Acceso a los datos
+    datos = st.session_state.get('datos')
+    if datos is None:
+        st.error("No se encontraron datos en st.session_state. Carga el CSV antes de continuar.")
+        return
 
-    with st.expander("Observaciones del cielo"):
-        st.markdown("""
-        <p style='font-family:"Times New Roman";color:#f0f0f0;'>
-        Cuando miramos al cielo, observamos muchos objetos brillantes, la mayoría de los cuales son estrellas. No todas las
-        estrellas brillan de la misma manera, por lo que es natural preguntarse: ¿existen estrellas que brillan más que otras?¿las estrellas más brillantes están más cerca de la Tierra?
-        ¿Cuál es la estrella más cercana a la Tierra? ¿hay más estrellas de las que podemos ver?
-        </p>
+    # 2) Título general
+    st.markdown(
+        "<h2 style='font-family:Times New Roman; color:#cccccc;'>"
+        "Actividad 1: Brillo Estelar</h2>",
+        unsafe_allow_html=True
+    )
+
+    # 3) Crear/recuperar el estado de la subsección
+    if 'subsec_a1' not in st.session_state:
+        st.session_state.subsec_a1 = 'Introducción'
+
+    # 4) Menú tipo “botonera” (puedes cambiar los nombres o el número de botones)
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        if st.button("Introducción"):
+            st.session_state.subsec_a1 = 'Introducción'
+
+    with col2:
+        if st.button("Graficando"):
+            st.session_state.subsec_a1 = 'Graficando'
+
+    with col3:
+        if st.button("Interpretación de los Datos"):
+            st.session_state.subsec_a1 = 'Interpretación de los Datos'
+
+    # 5) Mostrar la subsección correspondiente
+    subsec = st.session_state.subsec_a1
+
+    if subsec == 'Introducción':
+        st.subheader("Introducción")
+        st.write("Cuando miramos al cielo, observamos muchos objetos brillantes, la mayoría de los cuales son estrellas. No todas las estrellas brillan de la misma manera, por lo que es natural preguntarse: ¿existen estrellas que brillan más que otras?¿las estrellas más brillantes están más cerca de la Tierra?¿Cuál es la estrella más cercana a la Tierra? ¿hay más estrellas de las que podemos ver?")
+        with st.expander("Explicación teórica", expanded=True):
+            st.markdown("""
         <p style='font-family:"Times New Roman"; color:#f0f0f0'>
-        Se conoce como <strong>brillo</strong> o <strong>flujo luminoso</strong> de una estrella a la cantidad de luminosidad que viene de un objeto radiante y que llega a la Tierra. De esta forma, el brillo se relaciona con la percepción de qué tan brillante se ve una estrella desde la Tierra. La <em>magnitud aparente</em> nos permite clasificar estrellas a partir de su brillo. Es importante mencionar que la magnitud aparente no entrega información del brillo real del astro, ya que esa característica depende de la distancia y tamaño del objeto.
+        Se conoce como <strong>brillo</strong> o <strong>flujo luminoso</strong> de una estrella a la cantidad de luminosidad que emite un objeto radiante que llega a la Tierra.  
+        La <em>magnitud aparente</em> nos permite clasificar estrellas según ese brillo aparente.  
+        Sin embargo, no refleja el brillo real, que depende de la distancia y el tamaño del astro.
+        </p>
+        """, unsafe_allow_html=True)
+        csv_bytes = datos.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="⬇️ Descargar CSV",
+            data=csv_bytes,
+            file_name="nova_estudiante.csv",
+            mime="text/csv"
+        )
+        st.image("mgnitude.png", caption="Brillo Relativo", use_container_width=True)
+    elif subsec == 'Graficando':
+        st.header("Visualizaciones")
+        st.markdown("Utilizando los datos que te entregamos previamente, construye un gráfico de dispersión considerando como variable dependiente el brillo y como variable independiente la magnitud aparente.)")
+        fig, ax = plt.subplots()
+        ax.scatter(datos['magnitud'], datos['flujo'], marker='*', alpha=0.7, color='red')
+        ax.set_xlabel("Magnitud aparente")
+        ax.set_ylabel("Flujo observado")
+        ax.set_title("Curva de luz: Flujo vs. Magnitud")
+        st.pyplot(fig)
+
+        with st.expander("Pregunta 1", expanded=True):
+                st.markdown("### ¿Cuál es la relación entre el brillo y la magnitud aparente?")
+        opciones = [
+        "A) Mientras mayor es el brillo, mayor es la magnitud aparente.",
+        "B) Mientras menor es el brillo, mayor es la magnitud aparente.",
+        "C) No hay relación entre el brillo y la magnitud aparente.",
+        "D) Brillo y magnitud aparente son equivalentes."
+    ]
+        seleccion = st.radio("Selecciona una opción:", opciones, key="alternativas_brillo_magnitud")
+
+        # Verificación de la respuesta
+        if st.button("Verificar respuesta"):
+            if seleccion == opciones[1]:  # Respuesta correcta: B
+                st.success("¡Correcto! Mientras menor es el brillo, mayor es la magnitud aparente.")
+            else:
+                st.error("Respuesta incorrecta. Intenta nuevamente. Recuerda que la magnitud aparente es inversamente proporcional al brillo.")
+        
+        comentario_usuario = st.text_input(
+        label="Considerando las funciones trabajadas en clases, ¿Con qué función crees podrías modelar esta situación? Argumenta tu respuesta considerando características del gráfico.",
+        placeholder="Escribe aquí...",
+        key="comentario_usuario_graficos"
+    )
+
+    # Verificar si el usuario escribió algo
+        if comentario_usuario:
+            st.markdown("Respuesta: La relación entre el flujo y magnitud aparente está definida por una función logarítmica inversa, dado que la relación no es lineal y cuando una variable aumenta la otra disminuye. ")
+        
+
+    elif subsec == 'Interpretación de los Datos':
+        st.subheader("Datos en tabla")
+        if {'astro', 'magnitud', 'flujo'}.issubset(datos.columns):
+            st.dataframe(datos[['astro', 'magnitud', 'flujo']])
+        else:
+            st.warning("No se encontró la columna 'astro' en los datos.")
+        estrella_mas_brillo = datos.loc[datos['flujo'].idxmax(), 'astro']
+        estrella_menos_brillo = datos.loc[datos['flujo'].idxmin(), 'astro']
+
+        opciones_mas_brillo = random.sample(datos['astro'].tolist(), k=3)  # 3 opciones adicionales
+        if estrella_mas_brillo not in opciones_mas_brillo:
+            opciones_mas_brillo.append(estrella_mas_brillo)  # Asegurarse de incluir la respuesta correcta
+        random.shuffle(opciones_mas_brillo)
+
+        opciones_menos_brillo = random.sample(datos['astro'].tolist(), k=3)  # 3 opciones adicionales
+        if estrella_menos_brillo not in opciones_menos_brillo:
+            opciones_menos_brillo.append(estrella_menos_brillo)  # Asegurarse de incluir la respuesta correcta
+        random.shuffle(opciones_menos_brillo)
+
+        st.markdown("### Pregunta 2: ¿Cuál estrella tiene más brillo?")
+        respuesta_mas_brillo = st.radio("Selecciona la estrella más brillante:", opciones_mas_brillo, key="estrella_mas_brillo")
+
+    # Verificación de la respuesta
+        if st.button("Verificar respuesta de más brillo"):
+            if respuesta_mas_brillo == estrella_mas_brillo:
+                st.success(f"¡Correcto! La estrella más brillante es {estrella_mas_brillo}.")
+            else:
+                st.error(f"Incorrecto. La estrella más brillante es {estrella_mas_brillo}.")
+
+    # Pregunta: ¿Qué estrella tiene menos brillo?
+        st.markdown("### Pregunta 3: ¿Cuál estrella tiene menos brillo?")
+        respuesta_menos_brillo = st.radio("Selecciona la estrella menos brillante:", opciones_menos_brillo, key="estrella_menos_brillo")
+
+    # Verificación de la respuesta
+        if st.button("Verificar respuesta de menos brillo"):
+            if respuesta_menos_brillo == estrella_menos_brillo:
+                st.success(f"¡Correcto! La estrella menos brillante es {estrella_menos_brillo}.")
+            else:
+                st.error(f"Incorrecto. La estrella menos brillante es {estrella_menos_brillo}.")
+        st.markdown("""
+        <h4 style='color:white;'>Clasificación según Hiparco</h4>
+        <p style='color:white;'>
+        Hiparco categorizó a las estrellas según el brillo observado. Utilizó la <strong>magnitud aparente</strong> para crear seis categorías, 
+        mucho antes de que Norman Pogson descubriera que había una relación matemática entre ellas. La siguiente tabla muestra 
+        la categorización observada:
         </p>
         """, unsafe_allow_html=True)
 
-        st.image("mgnitude.png", caption="Brillo Relativo", use_container_width=True)
-
-
-    st.markdown("<h3 style='font-family:\"Times New Roman\"; color:#cccccc;'>Nuestro Objetivo</h3>", unsafe_allow_html=True)
-    st.markdown("<div style='font-family:\"Times New Roman\";color:#f0f0f0;'>Modelar el comportamiento del brillo en novas reales, clasificar los eventos según su decaimiento (t₃), y permitir su uso en" \
-    " clases de matemática y física.</div>", unsafe_allow_html=True)
-
-    datos = cargar_datos_programador_csv()
-    if datos is not None:
-        st.dataframe(datos)
-        descargar_datos_csv(datos)
-
-    
-
-
+    # Tabla de Hiparco
+        hiparco_df = pd.DataFrame({
+    "Magnitud": [1, 2, 3, 4, 5, 6],
+    "Factor de Brillo": [2.52, 6.310, 15.851, 39.818, 100.022, 251.257]
+        })
+        st.dataframe(hiparco_df, use_container_width=True)
 def cargar_datos_programador_csv():
-    """
-    Carga los datos desde un archivo CSV
-    """
     archivo = "nova_estudiante.csv"
     try:
-        datos = pd.read_csv("nova_estudiante.csv")
+        datos = pd.read_csv(archivo)
         st.success(f"Datos cargados exitosamente desde {archivo}.")
-        return datos
+        st.session_state.datos = datos   #guardamos en session_state
     except FileNotFoundError:
-        st.error(f"El archivo '{archivo}' no se encontró. Asegúrate de que esté en la misma carpeta que este script.")
-        return None
+        st.error(f"El archivo '{archivo}' no se encontró.")
+        st.session_state.datos = None
     except Exception as e:
         st.error(f"Ocurrió un error al cargar los datos: {e}")
-        return None
+        st.session_state.datos = None
+
     
     
 def descargar_datos_csv(datos, nombre_archivo="nova_estudiante.csv"):
