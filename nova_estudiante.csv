@@ -1,48 +1,48 @@
-Astro/objeto,Flujo ,Magnitud aparente
-Sirio (α Canis Majoris),3.84E+00,-1.46E+00
-Canopus (α Carinae),1.98E+00,-7.40E-01
-Arturo (α Boötis),1.05E+00,-5.00E-02
-Vega (α Lyrae),9.73E-01,3.00E-02
-Capella (α Aurigae),9.29E-01,8.00E-02
-Rigel (β Orionis),8.87E-01,1.30E-01
-Procyon (α Canis Minoris),7.05E-01,3.80E-01
-Achernar (α Eridani),6.55E-01,4.60E-01
-Betelgeuse (α Orionis),5.86E-01,5.80E-01
-Hadar (α Centauri),5.70E-01,6.10E-01
-Altair (α Aquilae),4.92E-01,7.70E-01
-Aldebarán (α Tauri),4.57E-01,8.50E-01
-Spica (α Virginis),4.06E-01,9.80E-01
-Pollux (β Geminorum),3.50E-01,1.14E+00
-Fomalhaut (α Piscis Austrini),3.44E-01,1.16E+00
-Miaplacidus (β Carinae),3.25E-01,1.22E+00
-Deneb (α Cygni),3.16E-01,1.25E+00
-Regulus (α Leonis),2.88E-01,1.35E+00
-Castor (α Geminorum),2.33E-01,1.58E+00
-Shaula (λ Scorpii),2.25E-01,1.62E+00
-Bellatrix (γ Orionis),2.21E-01,1.64E+00
-Alnitak (ζ Orionis),2.01E-01,1.74E+00
-Alioth (ε Ursae Majoris),1.94E-01,1.78E+00
-Dubhe (α Ursae Majoris),1.92E-01,1.79E+00
-Mirfak (α Persei),1.87E-01,1.82E+00
-Kaus Australis (ε Sagittarii),1.80E-01,1.86E+00
-Benetnasch (η Ursae Majoris),1.79E-01,1.87E+00
-Peacock (α Pavonis),1.72E-01,1.91E+00
-Alhena (γ Geminorum),1.69E-01,1.93E+00
-Hamal (α Arietis),1.54E-01,2.03E+00
-Algol (β Persei),1.42E-01,2.12E+00
-Mizar (ζ Ursae Majoris),1.28E-01,2.23E+00
-Eltanin (γ Draconis),1.27E-01,2.24E+00
-Almach (γ Andromedae),1.22E-01,2.28E+00
-Merak (β Ursae Majoris),1.16E-01,2.34E+00
-Ankaa (α Phoenicis),1.10E-01,2.40E+00
-Scheat (β Pegasi),1.08E-01,2.42E+00
-Phecda (γ Ursae Majoris),1.06E-01,2.44E+00
-Aludra (η Canis Majoris),1.05E-01,2.45E+00
-Markab (α Pegasi),1.01E-01,2.49E+00
-Menkar (α Ceti),9.91E-02,2.51E+00
-Sheratan (β Arietis),8.79E-02,2.64E+00
-Tania Australis (μ Ursae Majoris),5.97E-02,3.06E+00
-Megrez (δ Ursae Majoris),4.70E-02,3.32E+00
-Tania Borealis (λ Ursae Majoris),4.21E-02,3.44E+00
-Alcor (80 Ursae Majoris),2.56E-02,3.98E+00
-Talitha (ι Ursae Majoris),2.51E-02,4.00E+00
+astro,flujo,magnitud
+Sirio (α Canis Majoris),3.84,-1.46
+Canopus (α Carinae),1.98,-0.74
+Arturo (α Boötis),1.05,-0.05
+Vega (α Lyrae),0.973,0.03
+Capella (α Aurigae),0.929,0.08
+Rigel (β Orionis),0.887,0.13
+Procyon (α Canis Minoris),0.705,0.38
+Achernar (α Eridani),0.655,0.46
+Betelgeuse (α Orionis),0.586,0.58
+Hadar (α Centauri),0.57,0.61
+Altair (α Aquilae),0.492,0.77
+Aldebarán (α Tauri),0.457,0.85
+Spica (α Virginis),0.406,0.98
+Pollux (β Geminorum),0.35,1.14
+Fomalhaut (α Piscis Austrini),0.344,1.16
+Miaplacidus (β Carinae),0.325,1.22
+Deneb (α Cygni),0.316,1.25
+Regulus (α Leonis),0.288,1.35
+Castor (α Geminorum),0.233,1.58
+Shaula (λ Scorpii),0.225,1.62
+Bellatrix (γ Orionis),0.221,1.64
+Alnitak (ζ Orionis),0.201,1.74
+Alioth (ε Ursae Majoris),0.194,1.78
+Dubhe (α Ursae Majoris),0.192,1.79
+Mirfak (α Persei),0.187,1.82
+Kaus Australis (ε Sagittarii),0.18,1.86
+Benetnasch (η Ursae Majoris),0.179,1.87
+Peacock (α Pavonis),0.172,1.91
+Alhena (γ Geminorum),0.169,1.93
+Hamal (α Arietis),0.154,2.03
+Algol (β Persei),0.142,2.12
+Mizar (ζ Ursae Majoris),0.128,2.23
+Eltanin (γ Draconis),0.127,2.24
+Almach (γ Andromedae),0.122,2.28
+Merak (β Ursae Majoris),0.116,2.34
+Ankaa (α Phoenicis),0.11,2.4
+Scheat (β Pegasi),0.108,2.42
+Phecda (γ Ursae Majoris),0.106,2.44
+Aludra (η Canis Majoris),0.105,2.45
+Markab (α Pegasi),0.101,2.49
+Menkar (α Ceti),0.0991,2.51
+Sheratan (β Arietis),0.0879,2.64
+Tania Australis (μ Ursae Majoris),0.0597,3.06
+Megrez (δ Ursae Majoris),0.047,3.32
+Tania Borealis (λ Ursae Majoris),0.0421,3.44
+Alcor (80 Ursae Majoris),0.0256,3.98
+Talitha (ι Ursae Majoris),0.0251,4.0
