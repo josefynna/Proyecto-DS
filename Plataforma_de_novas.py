@@ -361,21 +361,26 @@ def actividad_2():
             "B) Lento: Su brillo disminuye de forma gradual y tarda mas en perder magnitud.",
             "C) muy lento: Su brillo permanece durante una decada o mas antes de comenzar a desvanecerse lentamente."
         ]       
-        respuesta_tipo = st.radio(
+        respuesta_decaimiento = st.radio(
             "Selecciona el tipo de decaimiento:",
             Alternativas,
             key="pregunta_tipo_decaimiento" 
         )
 
         if st.button("Verificar tipo de decaimiento", key="boton_decaimiento"):
-            if nova_seleccionada == "NOVA Sco 2023" and respuesta_tipo == Alternativas[0]:
-                st.success("Correcto, la NOVA Sco 2023 presenta un decaimiento rápido.")
-            elif nova_seleccionada == "NOVA Sgr 202331" and respuesta_tipo == Alternativas[0]:
-                st.success("Correcto, la NOVA Sgr 202331 presenta un decaimiento rapido.")
-            elif nova_seleccionada == "NOVA Cplac" and respuesta_tipo == Alternativas[2]:
-                st.success("Correcto, la NOVA Cplac presenta un decaimiento lento.")
-            elif nova_seleccionada == "Nova V603" and respuesta_tipo == Alternativas[0]:
-                st.succes("Correcto, la NOVA V603 presenta un decaimiento rapido")
+            if nova_seleccionada == "NOVA Sco 2023" and respuesta_decaimiento == Alternativas[0]:
+                st.success("Correcto")
+                st.markdown("<p style='color:white;'>Si bien la curva varia, al principio la curva deciende bruscamente por lo que se clasifica como Rapida.</p>", unsafe_allow_html=True)
+            elif nova_seleccionada == "NOVA Sgr 202331" and respuesta_decaimiento == Alternativas[0]:
+                st.success("Correcto")
+                st.markdown("<p style='color:white;'>El gráfico muestra un descenso gradual del brillo.</p>", unsafe_allow_html=True)
+            elif nova_seleccionada == "NOVA Cplac" and respuesta_decaimiento == Alternativas[2]:
+                st.success("Correcto")
+                st.markdown("<p style='color:white;'>El gráfico muestra un descenso gradual del brillo.</p>", unsafe_allow_html=True)
+            elif nova_seleccionada == "Nova V603" and respuesta_decaimiento == Alternativas[0]:
+                st.succes("Correcto")
+                st.markdown("<p style='color:white;'>Se observa una caída brusca de brillo después del pico de la curva de luz.</p>", unsafe_allow_html=True)
+
             else:
                 st.error("Respuesta incorrecta. Observa con mas detalle la curva de luz.")
                 st.markdown("""
