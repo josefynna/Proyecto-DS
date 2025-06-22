@@ -243,7 +243,7 @@ def actividad_1():
         hiparco_df = pd.DataFrame({
     "Magnitud": [1, 2, 3, 4, 5, 6],
     "Factor de Brillo": [2.52, 6.310, 15.851, 39.818, 100.022, 251.257]
-        })
+})
         st.dataframe(hiparco_df, use_container_width=True)
 def cargar_datos_programador_csv():
     archivo = "nova_estudiante.csv"
@@ -557,14 +557,18 @@ def main():
     set_background("fondo.png")
     set_custom_styles()
 
-
     st.title("Plataforma Interactiva para el estudio de Novas")
 
-    # Usar st.session_state para mantener el estado de la página seleccionada
-    if 'page' not in st.session_state:
-        st.session_state.page = 'Actividad 1' # Página inicial
+    # ----------- ① CARGA ÚNICA DE DATOS -----------------
+    if 'datos' not in st.session_state:
+        cargar_datos_programador_csv()
+    # ----------------------------------------------------
 
-    col1, col2 = st.columns(2) # Puedes ajustar el número de columnas según cuántos botones quieras
+    # Mantener el estado de la página seleccionada
+    if 'page' not in st.session_state:
+        st.session_state.page = 'Actividad 1'  # Página inicial
+
+    col1, col2 = st.columns(2)
 
     with col1:
         if st.button("Actividad 1: Brillo Estelar"):
@@ -576,7 +580,14 @@ def main():
 
     # Mostrar el contenido según la página seleccionada
     if st.session_state.page == 'Actividad 1':
-        actividad_1()
+        if 'datos' not in st.session_state or st.session_state.datos is None:
+            cargar_datos_programador_csv()
+
+        if st.session_state.datos is not None:
+            actividad_1()
+        else:
+            st.warning("No se pudieron cargar los datos. Asegúrate de que 'nova_estudiante.csv' esté en el directorio del proyecto.")
+
     elif st.session_state.page == 'Actividad 2':
         actividad_2()
 
