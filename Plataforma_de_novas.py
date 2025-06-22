@@ -378,7 +378,7 @@ def actividad_2():
                 st.success("Correcto")
                 st.markdown("<p style='color:white;'>El gráfico muestra un descenso gradual del brillo.</p>", unsafe_allow_html=True)
             elif nova_seleccionada == "NOVA V603" and respuesta_decaimiento == Alternativas[0]:
-                st.succes("Correcto")
+                st.success("Correcto")
                 st.markdown("<p style='color:white;'>Se observa una caída brusca de brillo después del pico de la curva de luz.</p>", unsafe_allow_html=True)
 
             else:
