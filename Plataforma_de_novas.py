@@ -366,7 +366,7 @@ def actividad_2():
             Alternativas,
             key="pregunta_tipo_decaimiento" 
         )
-
+        #respuesta correcta para cada nova
         if st.button("Verificar tipo de decaimiento", key="boton_decaimiento"):
             if nova_seleccionada == "NOVA Sco 2023" and respuesta_decaimiento == Alternativas[0]:
                 st.success("Correcto")
@@ -377,7 +377,7 @@ def actividad_2():
             elif nova_seleccionada == "NOVA Cplac" and respuesta_decaimiento == Alternativas[2]:
                 st.success("Correcto")
                 st.markdown("<p style='color:white;'>El gráfico muestra un descenso gradual del brillo.</p>", unsafe_allow_html=True)
-            elif nova_seleccionada == "Nova V603" and respuesta_decaimiento == Alternativas[0]:
+            elif nova_seleccionada == "NOVA V603" and respuesta_decaimiento == Alternativas[0]:
                 st.succes("Correcto")
                 st.markdown("<p style='color:white;'>Se observa una caída brusca de brillo después del pico de la curva de luz.</p>", unsafe_allow_html=True)
 
