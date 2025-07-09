@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 import base64
-import matplotlib.pyplot as plt 
-import numpy as np 
-import io 
+import matplotlib.pyplot as plt
+import numpy as np
+import io
 import random
 
 def set_background(image_file):
@@ -87,6 +87,80 @@ def set_custom_styles():
         color: white !important; /* Intento alternativo para el texto del botón */
     }
 
+    /* FIX: Textos de st.write y st.markdown que no toman el color */
+    /* Target common Streamlit text elements */
+    .stMarkdown p, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4, .stMarkdown span,
+    .stText p, .stAlert p, .stSuccess p, .stError p, .stWarning p,
+    .stInfo p, .stForm > div > div > label > div > span {
+        color: white !important;
+    }
+
+    /* Specific fix for radio button labels which might be rendered differently */
+    .stRadio label > div > span {
+        color: white !important;
+    }
+
+    /* Specific fix for st.subheader in Actividad 1 and similar */
+    .stApp .st-emotion-cache-1g88p9b h3 { /* This is a common class for st.subheader */
+        color: white !important;
+    }
+    
+    /* Specific fix for the text input label in Actividad 1 */
+    .stTextInput label p {
+        color: white !important;
+    }
+
+    /* ************************************************* */
+    /* REGLAS PARA TÍTULOS ESPECÍFICOS DE ACTIVIDAD 1 */
+    /* ************************************************* */
+
+    /* Para st.header (que usualmente se renderiza como h1) */
+    .block-container h1 {
+        color: white !important;
+    }
+
+    /* Para st.subheader (que usualmente se renderiza como h3) */
+    .block-container h3 {
+        color: white !important;
+    }
+
+    /* Regla más general para texto dentro del contenedor principal de la aplicación */
+    .stApp div[data-testid="stVerticalBlock"] h1,
+    .stApp div[data-testid="stVerticalBlock"] h2,
+    .stApp div[data-testid="stVerticalBlock"] h3,
+    .stApp div[data-testid="stVerticalBlock"] p,
+    .stApp div[data-testid="stVerticalBlock"] span {
+        color: white !important;
+    }
+    
+    /* ************************************************* */
+    /* NUEVAS REGLAS PARA BOTONES DE DESCARGA */
+    /* ************************************************* */
+    /* Apuntamos al botón que contiene el data-testid="stDownloadButton" */
+    div[data-testid="stDownloadButton"] > button {
+        background-color: rgb(40, 40, 50) !important; /* Un color de fondo oscuro para el botón de descarga */
+        color: #cccccc !important; /* Un gris claro para el texto del botón de descarga */
+        border: 1px solid rgba(250, 250, 250, 0.2) !important; /* Borde sutil */
+    }
+
+    /* Efecto hover para el botón de descarga */
+    div[data-testid="stDownloadButton"] > button:hover {
+        background-color: rgb(60, 60, 70) !important; /* Ligeramente más claro al pasar el ratón */
+        color: white !important; /* Texto blanco al pasar el ratón */
+    }
+
+    /* Para asegurar que el icono dentro del botón de descarga también sea visible */
+    div[data-testid="stDownloadButton"] > button .st-emotion-cache-10c9vv9 svg {
+        fill: #cccccc !important; /* Color del icono */
+    }
+
+    /* Para el texto dentro del botón de descarga */
+    div[data-testid="stDownloadButton"] > button p {
+        color: #cccccc !important; /* Asegura que el texto sea gris claro */
+    }
+    div[data-testid="stDownloadButton"] > button p:hover {
+        color: white !important; /* Texto blanco al pasar el ratón */
+    }
 
     </style>
     """
@@ -288,13 +362,27 @@ def simulacion_curva_luz():
     t3_value = st.slider("Valor de t3 (días para decaer 3 magnitudes)", min_value=1, max_value=200, value=50, step=1)
     tiempo_total = st.slider("Tiempo total de simulación (días)", min_value=10, max_value=500, value=100, step=10)
 
-    # Generar puntos de tiempo
+    # Generar puntos de tiempo.
     t = np.linspace(0, tiempo_total, 500)
+    
+    # Esta es la fórmula para un aumento logarítmico en la magnitud (decaimiento del brillo)
+    # tal que después de `t3_value` días, la magnitud ha aumentado en 3.
+    # El `+ 1` es crucial para evitar log(0) y para establecer la escala desde el día inicial.
+    # La magnitud comienza en m_peak en t=0.
+    
+    # Calcula el coeficiente `decay_rate_coefficient` tal que después de `t3_value` días,
+    # la magnitud ha aumentado en 3.
+    # M(t) = m_peak + decay_rate_coefficient * log10(t + 1)
+    # Queremos M(t3_value) = m_peak + 3
+    # m_peak + 3 = m_peak + decay_rate_coefficient * log10(t3_value + 1)
+    # decay_rate_coefficient = 3.0 / log10(t3_value + 1)
+    
+    if t3_value > 0: # Asegurarse de que t3_value no sea cero para evitar división por cero en log10(1) si t3_value = 0
+        decay_rate_coefficient = 3.0 / np.log10(t3_value + 1)
+    else: # Manejar t3_value = 0 (decaimiento instantáneo, efectivamente) o valores muy pequeños
+        decay_rate_coefficient = 0 # Para una curva suave, 0 es más seguro aquí.
 
-    # Calcular la magnitud aparente
-    magnitud = m_peak + (3 / t3_value) * t
-
-    magnitud[magnitud < m_peak] = m_peak
+    magnitud = m_peak + decay_rate_coefficient * np.log10(t + 1)
 
     # Graficar la curva de luz
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -320,7 +408,7 @@ def simulacion_curva_luz():
 
     st.markdown(f"""
     <p style='color:white;'>
-    Con una magnitud inicial de <strong>{m_peak}</strong> y un $t_3$ de <strong>{t3_value}</strong> días,
+    Con una magnitud inicial de <strong>{m_peak}</strong> y un t_3 de <strong>{t3_value}</strong> días,
     la nova tardaría <strong>{t3_value}</strong> días en decaer 3 magnitudes,
     alcanzando una magnitud de <strong>{m_peak + 3:.1f}</strong> en ese punto.
     </p>
@@ -594,13 +682,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-    # Descomenta si tienes una tabla para mostrar
-    # df = pd.read_csv("clasificacion_novas.csv")
-    # st.dataframe(df)
 
 
 
