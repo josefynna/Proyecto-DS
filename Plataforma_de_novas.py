@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import io
 import random
+import openpyxl 
+
+
 
 def set_background(image_file):
     with open(image_file, "rb") as image:
@@ -20,8 +23,6 @@ def set_background(image_file):
     </style>
     """
     st.markdown(css, unsafe_allow_html=True)
-
-import streamlit as st # Asegúrate de que esta línea esté al inicio de tu script
 
 def set_custom_styles():
     custom_css = """
@@ -104,7 +105,7 @@ def set_custom_styles():
     .stApp .st-emotion-cache-1g88p9b h3 { /* This is a common class for st.subheader */
         color: white !important;
     }
-    
+
     /* Specific fix for the text input label in Actividad 1 */
     .stTextInput label p {
         color: white !important;
@@ -132,7 +133,7 @@ def set_custom_styles():
     .stApp div[data-testid="stVerticalBlock"] span {
         color: white !important;
     }
-    
+
     /* ************************************************* */
     /* NUEVAS REGLAS PARA BOTONES DE DESCARGA */
     /* ************************************************* */
@@ -166,7 +167,35 @@ def set_custom_styles():
     """
     st.markdown(custom_css, unsafe_allow_html=True)
 
-
+def add_logo(logo_path):
+    """
+    Agrega un logo redondo en la esquina superior derecha de la aplicación Streamlit.
+    """
+    with open(logo_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode()
+    
+    st.markdown(
+        f"""
+        <style>
+            .logo-container {{
+                position: fixed;
+                top: 60px;   /* ¡Aumentado a 60px para bajarlo más! */
+                right: 40px; /* Mantenemos 40px desde la derecha */
+                z-index: 1000; 
+            }}
+            .logo-container img {{
+                width: 100px;  
+                height: 100px; 
+                border-radius: 50%; 
+                object-fit: cover; 
+            }}
+        </style>
+        <div class="logo-container">
+            <img src="data:image/png;base64,{encoded_string}">
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 def actividad_1():
     """
     Actividad 1: Brillo Estelar
@@ -219,22 +248,52 @@ def actividad_1():
         Sin embargo, no refleja el brillo real, que depende de la distancia y el tamaño del astro.
         </p>
         """, unsafe_allow_html=True)
-        csv_bytes = datos.to_csv(index=False).encode('utf-8')
+        
+        # --- CAMBIO 5: Descarga a XLSX ---
+        # Convertir DataFrame a un buffer de Bytes para XLSX
+        output = io.BytesIO()
+        datos.to_excel(output, index=False, engine='openpyxl')
+        processed_data = output.getvalue()
+        
         st.download_button(
-            label="⬇️ Descargar CSV",
-            data=csv_bytes,
-            file_name="nova_estudiante.csv",
-            mime="text/csv"
+            label="⬇️ Descargar Datos (XLSX)",
+            data=processed_data,
+            file_name="nova_estudiante.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+        # --- FIN CAMBIO 5 ---
+
         st.image("mgnitude.png", caption="Brillo Relativo", use_container_width=True)
+
     elif subsec == 'Graficando':
         st.header("Visualizaciones")
         st.markdown("Utilizando los datos que te entregamos previamente, construye un gráfico de dispersión considerando como variable dependiente el brillo y como variable independiente la magnitud aparente.)")
         fig, ax = plt.subplots()
-        ax.scatter(datos['magnitud'], datos['flujo'], marker='*', alpha=0.7, color='red')
-        ax.set_xlabel("Magnitud aparente")
-        ax.set_ylabel("Flujo observado")
-        ax.set_title("Curva de luz: Flujo vs. Magnitud")
+        # --- HOMOGENEIZAR GRÁFICOS: COLORES Y FONDOS ---
+        # Colores de los puntos: ya 'skyblue'
+        ax.scatter(datos['magnitud'], datos['flujo'], marker='*', alpha=0.7, color='skyblue') 
+        
+        # Fondo del área del gráfico (plot area)
+        ax.set_facecolor("#262730") # Un gris oscuro
+        # Fondo de la figura completa (fuera del área del gráfico)
+        fig.patch.set_facecolor("#0e1117") # Un negro muy oscuro
+        
+        # Color de las etiquetas de los ejes, títulos y ticks
+        ax.set_xlabel("Magnitud Aparente (mag)", color='white') 
+        ax.set_ylabel(r"Flujo Observado (W/$\mathrm{m}^2$)", color='white')
+        ax.set_title("Curva de luz: Flujo vs. Magnitud", color='white')
+        
+        # Color de los ticks de los ejes
+        ax.tick_params(axis='x', colors='white')
+        ax.tick_params(axis='y', colors='white')
+        
+        # Color de las líneas de los bordes del gráfico
+        ax.spines['left'].set_color('white')
+        ax.spines['bottom'].set_color('white')
+        ax.spines['right'].set_color('white')
+        ax.spines['top'].set_color('white')
+        # --- FIN HOMOGENEIZAR GRÁFICOS ---
+        
         st.pyplot(fig)
 
         with st.expander("Pregunta 1", expanded=True):
@@ -319,96 +378,73 @@ def actividad_1():
     "Factor de Brillo": [2.52, 6.310, 15.851, 39.818, 100.022, 251.257]
 })
         st.dataframe(hiparco_df, use_container_width=True)
-def cargar_datos_programador_csv():
-    archivo = "nova_estudiante.csv"
-    try:
-        datos = pd.read_csv(archivo)
-        st.success(f"Datos cargados exitosamente desde {archivo}.")
-        st.session_state.datos = datos   #guardamos en session_state
-    except FileNotFoundError:
-        st.error(f"El archivo '{archivo}' no se encontró.")
-        st.session_state.datos = None
-    except Exception as e:
-        st.error(f"Ocurrió un error al cargar los datos: {e}")
-        st.session_state.datos = None
 
-    
-    
-def descargar_datos_csv(datos, nombre_archivo="nova_estudiante.csv"):
+def descargar_datos_xlsx(datos, nombre_archivo="datos_nova.xlsx"):
     """
-    Permite a los usuarios descargar un archivo CSV.
+    Permite a los usuarios descargar un archivo XLSX.
     """
-    buffer = io.StringIO()
-    datos.to_csv(buffer, index=False)
-    
-    # Obtener el contenido del buffer como texto
-    contenido_csv = buffer.getvalue()
-
+    output = io.BytesIO()
+    datos.to_excel(output, index=False, engine='openpyxl')
+    processed_data = output.getvalue()
     st.download_button(
-        label="Descargar archivo CSV",
-        data=contenido_csv,  # ✅ ahora es un string válido
+        label="⬇️ Descargar Datos (XLSX)",
+        data=processed_data,
         file_name=nombre_archivo,
-        mime="text/csv"
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 def simulacion_curva_luz():
     st.markdown("<h3 style='font-family:\"Times New Roman\"; color:#cccccc;'>Simulación de Curva de Luz</h3>", unsafe_allow_html=True)
+    
     st.markdown("""
     <p style='color:white;'>
     Explora cómo la magnitud aparente de una nova varía con el tiempo, utilizando el parámetro t3.
-    </p>
     """, unsafe_allow_html=True)
 
     m_peak = st.slider("Magnitud Aparente Inicial (pico de brillo)", min_value=-5.0, max_value=10.0, value=0.0, step=0.1)
     t3_value = st.slider("Valor de t3 (días para decaer 3 magnitudes)", min_value=1, max_value=200, value=50, step=1)
     tiempo_total = st.slider("Tiempo total de simulación (días)", min_value=10, max_value=500, value=100, step=10)
 
-    # Generar puntos de tiempo.
     t = np.linspace(0, tiempo_total, 500)
     
-    # Esta es la fórmula para un aumento logarítmico en la magnitud (decaimiento del brillo)
-    # tal que después de `t3_value` días, la magnitud ha aumentado en 3.
-    # El `+ 1` es crucial para evitar log(0) y para establecer la escala desde el día inicial.
-    # La magnitud comienza en m_peak en t=0.
-    
-    # Calcula el coeficiente `decay_rate_coefficient` tal que después de `t3_value` días,
-    # la magnitud ha aumentado en 3.
-    # M(t) = m_peak + decay_rate_coefficient * log10(t + 1)
-    # Queremos M(t3_value) = m_peak + 3
-    # m_peak + 3 = m_peak + decay_rate_coefficient * log10(t3_value + 1)
-    # decay_rate_coefficient = 3.0 / log10(t3_value + 1)
-    
-    if t3_value > 0: # Asegurarse de que t3_value no sea cero para evitar división por cero en log10(1) si t3_value = 0
+    if t3_value > 0: 
         decay_rate_coefficient = 3.0 / np.log10(t3_value + 1)
-    else: # Manejar t3_value = 0 (decaimiento instantáneo, efectivamente) o valores muy pequeños
-        decay_rate_coefficient = 0 # Para una curva suave, 0 es más seguro aquí.
+    else: 
+        decay_rate_coefficient = 0 
 
     magnitud = m_peak + decay_rate_coefficient * np.log10(t + 1)
 
-    # Graficar la curva de luz
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.plot(t, magnitud, color='skyblue', linewidth=2)
-    ax.set_xlabel("Tiempo (días)", color='white')
-    ax.set_ylabel("Magnitud Aparente", color='white')
+    
+    # --- HOMOGENEIZAR GRÁFICOS: COLORES Y FONDOS ---
+    ax.set_xlabel("Tiempo (días)", color='white') 
+    ax.set_ylabel("Magnitud Aparente (mag)", color='white')
     ax.set_title("Curva de Luz de Nova Simulada", color='white')
-    ax.invert_yaxis() # La magnitud aparente se invierte: valores más bajos son más brillantes
+    ax.invert_yaxis() 
     ax.grid(True, linestyle='--', alpha=0.7)
-    ax.set_facecolor("#262730") # Fondo del gráfico oscuro
-    fig.patch.set_facecolor("#0e1117") # Fondo de la figura oscuro
+    
+    # Fondo del área del gráfico
+    ax.set_facecolor("#262730") 
+    # Fondo de la figura completa
+    fig.patch.set_facecolor("#0e1117") 
 
     # Color de los ticks y labels de los ejes
     ax.tick_params(axis='x', colors='white')
     ax.tick_params(axis='y', colors='white')
+    
+    # Color de las líneas de los bordes del gráfico
     ax.spines['left'].set_color('white')
     ax.spines['bottom'].set_color('white')
     ax.spines['right'].set_color('white')
     ax.spines['top'].set_color('white')
-
+    # --- FIN HOMOGENEIZAR GRÁFICOS ---
 
     st.pyplot(fig)
 
     st.markdown(f"""
     <p style='color:white;'>
-    Con una magnitud inicial de <strong>{m_peak}</strong> y un t_3 de <strong>{t3_value}</strong> días,
+    Con una magnitud inicial de <strong>{m_peak}</strong> y un t3 de <strong>{t3_value}</strong> días,
     la nova tardaría <strong>{t3_value}</strong> días en decaer 3 magnitudes,
     alcanzando una magnitud de <strong>{m_peak + 3:.1f}</strong> en ese punto.
     </p>
@@ -418,11 +454,9 @@ def actividad_2():
     
     st.markdown("<h2 style='font-family:\"Times New Roman\"; color:white;'>Actividad 2</h2>", unsafe_allow_html=True)
 
-    # Inicializar el estado de sesión para la sub-navegación de la actividad 2
     if 'act2_section' not in st.session_state:
-        st.session_state.act2_section = '¿Qué es una nova?' # Sección por defecto
+        st.session_state.act2_section = '¿Qué es una nova?' 
 
-    # Crear columnas para los botones
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
@@ -440,9 +474,8 @@ def actividad_2():
             st.session_state.act2_section="Actividad"
 
 
-    st.markdown("---") # Añadir una línea horizontal para separación
+    st.markdown("---") 
 
-    # Mostrar contenido basado en el botón seleccionado
     if st.session_state.act2_section == "¿Qué es una nova?":
          st.markdown("""
           <p style='color:white;'>
@@ -471,10 +504,11 @@ def actividad_2():
     elif st.session_state.act2_section == "Curvas de luz":
         st.markdown("""
         <p style='color:white;'>
-        La curva de luz es una herramienta gráfica, que representa el brillo de
-        un objeto en función del tiempo. Esta herramienta permite clasificar a las novas según la
-        tasa de decaimiento de su brillo desde la erupción, usando el parámetro **t₃**: el tiempo que tardan
-        en disminuir su brillo en 3 magnitudes.
+        Una <strong>curva de luz</strong> es un gráfico que muestra cómo el brillo de un objeto celeste, como una nova, 
+        cambia con el tiempo. Para las novas, es común observar un aumento rápido en el brillo seguido de un decaimiento 
+        más gradual. El parámetro <strong>t3</strong> es crucial para clasificar las novas, ya que representa 
+        el tiempo (en días) que tarda la nova en disminuir su brillo en 3 magnitudes desde su pico máximo.
+        </p>
         </p>
         """, unsafe_allow_html=True)
 
@@ -526,27 +560,37 @@ def actividad_2():
                 datos["Magnitud"] = datos["Magnitud"].str.replace(',', '.', regex=False).astype(float)
 
                 st.dataframe(datos)
-                descargar_datos_csv(datos, nombre_archivo=archivo_seleccionado)
+                
+                descargar_datos_xlsx(datos, nombre_archivo=f"{nova_seleccionada.replace(' ', '_')}.xlsx")
 
                 # Generar el gráfico de dispersión
                 st.markdown(f"<h4 style='color:#cccccc;'>Gráfico de Dispersión para {nova_seleccionada}</h4>", unsafe_allow_html=True)
                 fig, ax = plt.subplots(figsize=(10, 6))
-                ax.scatter(datos["Tiempo"], datos["Magnitud"], color='lightcoral', s=50, alpha=0.8)
-                ax.set_xlabel("Tiempo (días)", color='white')
-                ax.set_ylabel("Magnitud Aparente", color='white')
-                ax.set_title(f"Curva de Luz de {nova_seleccionada}", color='white')
-                ax.invert_yaxis() # Magnitudes más bajas son más brillantes
-                ax.grid(True, linestyle='--', alpha=0.7)
-                ax.set_facecolor("#262730") # Fondo del gráfico oscuro
-                fig.patch.set_facecolor("#0e1117") # Fondo de la figura oscuro
+                # --- HOMOGENEIZAR GRÁFICOS: COLORES Y FONDOS ---
+                ax.scatter(datos["Tiempo"], datos["Magnitud"], color='skyblue', s=50, alpha=0.8) 
+                
+                # Fondo del área del gráfico
+                ax.set_facecolor("#262730") 
+                # Fondo de la figura completa
+                fig.patch.set_facecolor("#0e1117") 
 
-                # Color de los ticks y labels de los ejes
+                # Color de las etiquetas de los ejes, títulos y ticks
+                ax.set_xlabel("Tiempo (días)", color='white')
+                ax.set_ylabel("Magnitud Aparente (mag)", color='white')
+                ax.set_title(f"Curva de Luz de {nova_seleccionada}", color='white')
+                ax.invert_yaxis() 
+                ax.grid(True, linestyle='--', alpha=0.7)
+                
+                # Color de los ticks de los ejes
                 ax.tick_params(axis='x', colors='white')
                 ax.tick_params(axis='y', colors='white')
+                
+                # Color de las líneas de los bordes del gráfico
                 ax.spines['left'].set_color('white')
                 ax.spines['bottom'].set_color('white')
                 ax.spines['right'].set_color('white')
                 ax.spines['top'].set_color('white')
+                # --- FIN HOMOGENEIZAR GRÁFICOS ---
 
                 st.pyplot(fig)
 
@@ -559,44 +603,42 @@ def actividad_2():
         st.markdown("""
         <hr style='border:1px solid #444;'>
         <p style='color:white;'>
-        Según la curva de kuz de la nova mostrada, ¿cómo clasificarías su tipo de decaimiento?
+        Según la curva de luz de la nova mostrada, ¿cómo clasificarías su tipo de decaimiento?
         </p>
         """, unsafe_allow_html=True)
 
-        #alternativas(opciones)
         Alternativas = [
-            "A) Rapido: pierde su brillo en muy rapidamente en muy pocos dias.",
-            "B) Lento: Su brillo disminuye de forma gradual y tarda mas en perder magnitud.",
-            "C) muy lento: Su brillo permanece durante una decada o mas antes de comenzar a desvanecerse lentamente."
+            "A) Rápido: pierde su brillo muy rápidamente en pocos días.", 
+            "B) Lento: Su brillo disminuye de forma gradual y tarda más en perder magnitud.", 
+            "C) Muy lento: Su brillo permanece durante una década o más antes de comenzar a desvanecerse lentamente." 
         ]       
         respuesta_decaimiento = st.radio(
             "Selecciona el tipo de decaimiento:",
             Alternativas,
             key="pregunta_tipo_decaimiento" 
         )
-        #respuesta correcta para cada nova
         if st.button("Verificar tipo de decaimiento", key="boton_decaimiento"):
             if nova_seleccionada == "NOVA Sco 2023" and respuesta_decaimiento == Alternativas[0]:
                 st.success("Correcto")
-                st.markdown("<p style='color:white;'>Si bien la curva varia, al principio la curva deciende bruscamente por lo que se clasifica como Rapida.</p>", unsafe_allow_html=True)
-            elif nova_seleccionada == "NOVA Sgr 202331" and respuesta_decaimiento == Alternativas[0]:
-                st.success("Correcto")
-                st.markdown("<p style='color:white;'>El gráfico muestra un descenso gradual del brillo.</p>", unsafe_allow_html=True)
+                st.markdown("<p style='color:white;'>Si bien la curva varía, al principio la curva desciende bruscamente por lo que se clasifica como Rápida.</p>", unsafe_allow_html=True) 
+            elif nova_seleccionada == "NOVA Sgr 202331" and respuesta_decaimiento == Alternativas[1]: # Corregida la respuesta esperada a "Lento"
+                st.success("Correcto") # Si ahora es la correcta
+                st.markdown("<p style='color:white;'>El gráfico muestra un descenso gradual del brillo, por lo que se clasifica como Lenta.</p>", unsafe_allow_html=True) # Mensaje de éxito para "Lento"
             elif nova_seleccionada == "NOVA Cplac" and respuesta_decaimiento == Alternativas[2]:
                 st.success("Correcto")
-                st.markdown("<p style='color:white;'>El gráfico muestra un descenso gradual del brillo.</p>", unsafe_allow_html=True)
+                st.markdown("<p style='color:white;'>El gráfico muestra un descenso gradual del brillo, extendido en el tiempo, clasificándose como Muy Lenta.</p>", unsafe_allow_html=True) 
             elif nova_seleccionada == "NOVA V603" and respuesta_decaimiento == Alternativas[0]:
                 st.success("Correcto")
                 st.markdown("<p style='color:white;'>Se observa una caída brusca de brillo después del pico de la curva de luz.</p>", unsafe_allow_html=True)
 
             else:
-                st.error("Respuesta incorrecta. Observa con mas detalle la curva de luz.")
+                st.error("Respuesta incorrecta. Observa con más detalle la curva de luz.") 
                 st.markdown("""
                 <p style='color:white;'>
                 Recuerda que un decaimiento rápido se refleja en una caída abrupta del brillo en pocos días (1-100), un decaimiento lento mantiene
-                el brillo alto por más tiempo antes de atenuarse (100-150) y un decaimiento mas lento cuando el brillo se mantiene por mas tiempo que la categoria anterior (mayor a 150).
+                el brillo alto por más tiempo antes de atenuarse (100-150) y un decaimiento muy lento cuando el brillo se mantiene por mas tiempo que la categoría anterior (mayor a 150).
                 </p>
-                """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True) 
 
         st.markdown("""
         <p style= 'color:white;'>
@@ -604,31 +646,28 @@ def actividad_2():
         </p>
         """, unsafe_allow_html=True)
 
-        # Opciones de respuesta
         opciones_respuesta = [
             "A) A medida que pasa el tiempo, el brillo de la nova aumenta constantemente.",
             "B) El brillo de la nova disminuye con el tiempo.",
             "C) No hay una relación clara entre el tiempo y el brillo."
         ]
 
-        # Radio button para que el usuario seleccione una respuesta
         respuesta_usuario = st.radio(
             "Selecciona la opción que mejor describe la relación observada:",
             opciones_respuesta,
-            key="pregunta_brillo_tiempo" # Clave única para este widget
+            key="pregunta_brillo_tiempo" 
         )
 
-        # Lógica para mostrar la retroalimentación
         if st.button("Ver respuesta", key="boton_respuesta_brillo"):
-            if respuesta_usuario == opciones_respuesta[1]: # Opción B es la correcta
+            if respuesta_usuario == opciones_respuesta[1]: 
                 st.success("¡Respuesta Correcta!")
                 st.markdown("""
                 <p style='color:white;'>
-                El gráfico de dispersión muestra claramente que, una vez que la nova "explota", el brillo de esta disminuye confome el tiempo
-                transcurrido, la relación matemática que existe entre la magnitud aparente y el teimpo transcurrido es logarítmica, es decir, 
+                El gráfico de dispersión muestra claramente que, una vez que la nova "explota", el brillo de esta disminuye conforme el tiempo
+                transcurrido. La relación matemática que existe entre la magnitud aparente y el tiempo transcurrido es logarítmica, es decir, 
                 el brillo decrece de forma logarítmica.
                 </p>
-                """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True) 
             else:
                 st.error("Respuesta Incorrecta. Inténtalo de nuevo.")
                 st.markdown("""
@@ -644,17 +683,25 @@ def actividad_2():
 def main():
     set_background("fondo.png")
     set_custom_styles()
+    add_logo("ciras.jpg") 
 
     st.title("Plataforma Interactiva para el estudio de Novas")
 
-    # ----------- ① CARGA ÚNICA DE DATOS -----------------
+    # Modificado para cargar datos solo si no existen y manejar errores
     if 'datos' not in st.session_state:
-        cargar_datos_programador_csv()
-    # ----------------------------------------------------
+        try:
+            st.session_state.datos = pd.read_csv("nova_estudiante.csv")
+            st.success("Datos iniciales cargados exitosamente.")
+        except FileNotFoundError:
+            st.error("Error: El archivo 'nova_estudiante.csv' no se encontró. Asegúrate de que esté en el mismo directorio que tu script.")
+            st.session_state.datos = None # Asegurarse de que sea None si hay un error
+        except Exception as e:
+            st.error(f"Ocurrió un error al cargar los datos iniciales: {e}")
+            st.session_state.datos = None
 
-    # Mantener el estado de la página seleccionada
+
     if 'page' not in st.session_state:
-        st.session_state.page = 'Actividad 1'  # Página inicial
+        st.session_state.page = 'Actividad 1'  
 
     col1, col2 = st.columns(2)
 
@@ -666,15 +713,12 @@ def main():
         if st.button("Actividad 2: Novas"):
             st.session_state.page = 'Actividad 2'
 
-    # Mostrar el contenido según la página seleccionada
     if st.session_state.page == 'Actividad 1':
-        if 'datos' not in st.session_state or st.session_state.datos is None:
-            cargar_datos_programador_csv()
-
+        # Solo llama a actividad_1 si los datos se cargaron correctamente
         if st.session_state.datos is not None:
             actividad_1()
         else:
-            st.warning("No se pudieron cargar los datos. Asegúrate de que 'nova_estudiante.csv' esté en el directorio del proyecto.")
+            st.warning("No se pudieron cargar los datos para la Actividad 1. Por favor, verifica el archivo 'nova_estudiante.csv'.")
 
     elif st.session_state.page == 'Actividad 2':
         actividad_2()
