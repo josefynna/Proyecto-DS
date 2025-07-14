@@ -179,7 +179,7 @@ def add_logo(logo_path):
         <style>
             .logo-container {{
                 position: fixed;
-                top: 60px;   /* ¡Aumentado a 60px para bajarlo más! */
+                top: 80px;   /* ¡Aumentado a 60px para bajarlo más! */
                 right: 40px; /* Mantenemos 40px desde la derecha */
                 z-index: 1000; 
             }}
